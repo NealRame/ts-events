@@ -1,0 +1,55 @@
+{
+  "name": "@nealrame/ts-events",
+  "version": "0.0.1",
+  "description": "A simple Emitter/Receiver library for Typescript",
+  "main": "./dist/index.js",
+  "files": [
+    "dist/**/*",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "./scripts/build.sh",
+    "clean": "./scripts/clean.sh",
+    "test": "./scripts/test-unit.sh",
+    "watch-unit": "npm-watch test"
+  },
+  "watch": {
+    "test": {
+      "patterns": [
+        "src/lib/**/*",
+        "src/tests/**/*"
+      ],
+      "extensions": "ts",
+      "quiet": true
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NealRame/ts-events.git"
+  },
+  "keywords": [
+    "events",
+    "emitter",
+    "receiver",
+    "typescript"
+  ],
+  "author": "Julien Graziano <julien@graziano.fr>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/chai": "^4.3.3",
+    "@types/mocha": "^10.0.0",
+    "@types/sinon": "^10.0.13",
+    "@types/sinon-chai": "^3.2.8",
+    "@typescript-eslint/eslint-plugin": "^5.42.0",
+    "@typescript-eslint/parser": "^5.42.0",
+    "chai": "^4.3.6",
+    "eslint": "^8.26.0",
+    "mocha": "^10.1.0",
+    "npm-watch": "^0.11.0",
+    "sinon": "^14.0.1",
+    "sinon-chai": "^3.7.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.4"
+  }
+}
