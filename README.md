@@ -93,3 +93,94 @@ emitter.emit("event1", 3.14)
 ```
 
 ### IReceiver
+
+#### on
+Subscribe to a given event.
+
+##### Synopsis
+```ts
+function on(event, callback): EventListenerUnsubscribeCallback
+```
+##### Parameters
+* `event`: an event name
+* `callback`: a callback function
+
+##### Return
+A function to end subscription to the event.
+
+##### Example
+```ts
+const [emitter, receiver] = useEvent<{
+    event1: number
+}>()
+
+const callback = (value: number) => console.log(value)
+
+const unsubscribe = receiver.on("event1", callback)
+
+unsubscribe() // end event1 subscription
+```
+
+#### once
+Subscribe to a given event once.
+
+##### Synopsis
+```ts
+function once(event, callback): EventListenerUnsubscribeCallback
+```
+##### Parameters
+* `event`: an event name
+* `callback`: a callback function
+
+##### Return
+A function to end subscription to the event.
+
+##### Example
+```ts
+const [emitter, receiver] = useEvent<{
+    event1: number
+}>()
+
+const callback = (value: number) => console.log(value)
+
+const unsubscribe = receiver.once("event1", callback)
+
+unsubscribe() // end event1 subscription
+```
+
+#### off
+
+##### Synopsis
+```ts
+function off(): void
+function off(event): void
+function off(event, callback): void
+```
+
+##### Parameters
+* `event`: an event name
+* `callback`: a callback function
+
+##### Example
+```ts
+const [emitter, receiver] = useEvent<{
+    event1: number
+    event2: number
+}>()
+
+const callback10 = (value: number) => console.log(value)
+const callback11 = (value: number) => console.log(value)
+const callback12 = (value: number) => console.log(value)
+const callback20 = (value: number) => console.log(value)
+
+receiver.on("event1", callback10)
+receiver.on("event1", callback11)
+receiver.on("event1", callback12)
+
+receiver.on("event2", callback20)
+
+receiver.off("event1", callback10) // after this callback11 and callback12 still being called
+receiver.off("event1") // after this no more callbacks will be called for event1
+receiver.off() //after this no more callbacks will be called for any events
+```
+
