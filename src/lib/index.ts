@@ -1,4 +1,5 @@
 export type EventListenerCallback<EventType> = (event: EventType) => void
+export type EventListenerUnsubscribeCallback = () => void
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type EventMap = Record<string, any>
@@ -9,13 +10,13 @@ export interface IEmitter<T extends EventMap> {
 }
 
 export interface IReceiver<T extends EventMap> {
-    on<K extends EventKey<T>>(eventName: K, callback: EventListenerCallback<T[K]>): IReceiver<T>
-    once<K extends EventKey<T>>(eventName: K, callback: EventListenerCallback<T[K]>): IReceiver<T>
+    on<K extends EventKey<T>>(eventName: K, callback: EventListenerCallback<T[K]>): EventListenerUnsubscribeCallback
+    once<K extends EventKey<T>>(eventName: K, callback: EventListenerCallback<T[K]>): EventListenerUnsubscribeCallback
 
-    off<K extends EventKey<T>>(eventName: K): IReceiver<T>
-    off<K extends EventKey<T>>(eventName: K, callback: EventListenerCallback<T[K]>): IReceiver<T>
+    off<K extends EventKey<T>>(eventName: K): void
+    off<K extends EventKey<T>>(eventName: K, callback: EventListenerCallback<T[K]>): void
 
-    clear(): IReceiver<T>
+    clear(): void
 }
 
 export function useEvents<T extends EventMap>()
@@ -45,7 +46,7 @@ export function useEvents<T extends EventMap>()
         on<K extends EventKey<T>>(
             eventName: K,
             callback: EventListenerCallback<T[K]>,
-        ): IReceiver<T> {
+        ): EventListenerUnsubscribeCallback {
             type ListenerList = Array<EventListenerCallback<T[K]>>
 
             if (!(eventName in handlers)) {
@@ -53,12 +54,12 @@ export function useEvents<T extends EventMap>()
             }
             (handlers[eventName] as ListenerList).push(callback)
 
-            return this
+            return () => this.off(eventName, callback)
         },
         once<K extends EventKey<T>>(
             eventName: K,
             callback: EventListenerCallback<T[K]>,
-        ): IReceiver<T> {
+        ): EventListenerUnsubscribeCallback {
             type ListenerList = Array<EventListenerCallback<T[K]>>
 
             if (!(eventName in handlersOnce)) {
@@ -66,12 +67,12 @@ export function useEvents<T extends EventMap>()
             }
             (handlersOnce[eventName] as ListenerList).push(callback)
 
-            return this
+            return () => this.off(eventName, callback)
         },
         off<K extends EventKey<T>>(
             eventName: K,
             callback?: EventListenerCallback<T[K]>,
-        ): IReceiver<T> {
+        ) {
             if (callback != null) {
                 const eventHandlers = handlers[eventName]
                 if (eventHandlers != null) {
@@ -91,12 +92,10 @@ export function useEvents<T extends EventMap>()
                 delete handlers[eventName]
                 delete handlersOnce[eventName]
             }
-            return this
         },
-        clear(): IReceiver<T> {
+        clear() {
             handlersOnce = {}
             handlers = {}
-            return this
         }
     }]
 }
