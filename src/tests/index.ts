@@ -134,20 +134,30 @@ describe("IReceiver", () => {
             expect(callback1).to.not.have.been.called
             expect(callback2).to.not.have.been.called
         })
-    })
 
-    describe("#clear", () => {
-        it("should unsubscribe all listeners to all events", () => {
+        it("should unsubscribe all listeners to all events if no event is given", () => {
             const [emitter, receiver] = useEvents()
             const callback1 = fake()
             const callback2 = fake()
             receiver.on("test1", callback1)
             receiver.on("test2", callback2)
-            receiver.clear()
+            receiver.off()
             emitter.emit("test1", "test")
             emitter.emit("test2", "test")
             expect(callback1).to.not.have.been.called
             expect(callback2).to.not.have.been.called
+        })
+    })
+
+    describe("dkfjqldkf", () => {
+        it("fdfdff", () => {
+            const [emitter, receiver] = useEvents()
+
+            receiver.on("test", (data) => {
+                console.log(data)
+            })
+
+            emitter.emit("test", { value: "test" })
         })
     })
 })

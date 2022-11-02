@@ -13,10 +13,9 @@ export interface IReceiver<T extends EventMap> {
     on<K extends EventKey<T>>(eventName: K, callback: EventListenerCallback<T[K]>): EventListenerUnsubscribeCallback
     once<K extends EventKey<T>>(eventName: K, callback: EventListenerCallback<T[K]>): EventListenerUnsubscribeCallback
 
+    off(): void
     off<K extends EventKey<T>>(eventName: K): void
     off<K extends EventKey<T>>(eventName: K, callback: EventListenerCallback<T[K]>): void
-
-    clear(): void
 }
 
 export function useEvents<T extends EventMap>()
@@ -70,10 +69,16 @@ export function useEvents<T extends EventMap>()
             return () => this.off(eventName, callback)
         },
         off<K extends EventKey<T>>(
-            eventName: K,
+            eventName?: K,
             callback?: EventListenerCallback<T[K]>,
         ) {
-            if (callback != null) {
+            if (eventName == null) {
+                handlers = {}
+                handlersOnce = {}
+            } else if (callback == null) {
+                delete handlers[eventName]
+                delete handlersOnce[eventName]
+            } else {
                 const eventHandlers = handlers[eventName]
                 if (eventHandlers != null) {
                     const index = eventHandlers.indexOf(callback)
@@ -88,14 +93,7 @@ export function useEvents<T extends EventMap>()
                         eventHandlersOnce.splice(index, 1)
                     }
                 }
-            } else {
-                delete handlers[eventName]
-                delete handlersOnce[eventName]
             }
-        },
-        clear() {
-            handlersOnce = {}
-            handlers = {}
         }
     }]
 }
