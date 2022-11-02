@@ -148,16 +148,4 @@ describe("IReceiver", () => {
             expect(callback2).to.not.have.been.called
         })
     })
-
-    describe("dkfjqldkf", () => {
-        it("fdfdff", () => {
-            const [emitter, receiver] = useEvents()
-
-            receiver.on("test", (data) => {
-                console.log(data)
-            })
-
-            emitter.emit("test", { value: "test" })
-        })
-    })
 })
