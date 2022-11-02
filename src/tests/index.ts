@@ -15,6 +15,10 @@ import {
 
 chai.use(simonChai)
 
+function noop() {
+    // noop
+}
+
 describe("useEvents", () => {
     it("should be a function", () => {
         expect(useEvents).to.be.a("function")
@@ -24,66 +28,126 @@ describe("useEvents", () => {
         const [emitter, receiver] = useEvents()
         expect(emitter).to.be.an("object")
         expect(receiver).to.be.an("object")
+    })
+})
+
+describe("IEmitter", () => {
+    it("should have a method emit", () => {
+        const [emitter] = useEvents()
         expect(emitter.emit).to.be.a("function")
-        expect(receiver.on).to.be.a("function")
-        expect(receiver.once).to.be.a("function")
-        expect(receiver.off).to.be.a("function")
-        expect(receiver.clear).to.be.a("function")
     })
 
-    it("should call listeners each time event events are emitted", () => {
-        const [emitter, receiver] = useEvents()
-        const callback = fake()
-        receiver.on("event", callback)
-        emitter.emit("event", "data")
-        emitter.emit("event", "data")
-        expect(callback).to.have.been.calledTwice
+    it("should return itself when emit", () => {
+        const [emitter] = useEvents()
+        expect(emitter.emit("test", "test")).to.equal(emitter)
     })
-    it("should call listeners with correct data", () => {
-        const [emitter, receiver] = useEvents()
-        const callback = fake()
-        receiver.on("event", callback)
-        emitter.emit("event", "data")
-        expect(callback).to.have.been.calledWith("data")
+})
+
+describe("IReceiver", () => {
+    describe("#on", () => {
+        it("should return a function", () => {
+            const [, receiver] = useEvents()
+            expect(receiver.on("test", noop)).to.be.a("function")
+        })
+
+        it("should call the event callback with the event data", () => {
+            const [emitter, receiver] = useEvents()
+            const callback = fake()
+            receiver.on("test", callback)
+            emitter.emit("test", "test")
+            expect(callback).to.have.been.calledWith("test")
+        })
+
+        it("should call the event callback each time the event is emitted", () => {
+            const [emitter, receiver] = useEvents()
+            const callback = fake()
+            receiver.on("test", callback)
+            emitter.emit("test", "test")
+            emitter.emit("test", "test")
+            expect(callback).to.have.been.calledTwice
+        })
+
+        it("shoud unsubscribe the event when the returned function is called", () => {
+            const [emitter, receiver] = useEvents()
+            const callback = fake()
+            const unsubscribe = receiver.on("test", callback)
+            unsubscribe()
+            emitter.emit("test", "test")
+            expect(callback).to.not.have.been.called
+        })
     })
 
-    it("should call one shot listeners once", () => {
-        const [emitter, receiver] = useEvents()
-        const callback = fake()
-        receiver.once("event", callback)
-        emitter.emit("event", "data")
-        emitter.emit("event", "data")
-        expect(callback).to.have.been.calledOnce
+    describe("#once", () => {
+        it("should return a function", () => {
+            const [, receiver] = useEvents()
+            expect(receiver.once("test", noop)).to.be.a("function")
+        })
+
+        it("should call the event callback with the event data", () => {
+            const [emitter, receiver] = useEvents()
+            const callback = fake()
+            receiver.once("test", callback)
+            emitter.emit("test", "test")
+            expect(callback).to.have.been.calledWith("test")
+        })
+
+        it("should call the event callback only once", () => {
+            const [emitter, receiver] = useEvents()
+            const callback = fake()
+            receiver.once("test", callback)
+            emitter.emit("test", "test")
+            emitter.emit("test", "test")
+            expect(callback).to.have.been.calledOnce
+        })
+
+        it("shoud unsubscribe the event when the returned function is called", () => {
+            const [emitter, receiver] = useEvents()
+            const callback = fake()
+            const unsubscribe = receiver.once("test", callback)
+            unsubscribe()
+            emitter.emit("test", "test")
+            expect(callback).to.not.have.been.called
+        })
     })
-    it("should call one shot listeners with correct data", () => {
-        const [emitter, receiver] = useEvents()
-        const callback = fake()
-        receiver.on("event", callback)
-        emitter.emit("event", "data")
-        expect(callback).to.have.been.calledWith("data")
+
+    describe("#off", () => {
+        it("should unsubscribe a given listener to the event", () => {
+            const [emitter, receiver] = useEvents()
+            const callback1 = fake()
+            const callback2 = fake()
+            receiver.on("test", callback1)
+            receiver.on("test", callback2)
+            receiver.off("test", callback1)
+            emitter.emit("test", "test")
+            expect(callback1).to.not.have.been.called
+            expect(callback2).to.have.been.called
+        })
+
+        it("should unsubscribe all listeners to the event if no listener is given", () => {
+            const [emitter, receiver] = useEvents()
+            const callback1 = fake()
+            const callback2 = fake()
+            receiver.on("test", callback1)
+            receiver.on("test", callback2)
+            receiver.off("test")
+            emitter.emit("test", "test")
+            expect(callback1).to.not.have.been.called
+            expect(callback2).to.not.have.been.called
+        })
     })
 
-    it("should remove listeners", () => {
-        const [emitter, receiver] = useEvents()
-        const callback = fake()
-        receiver.on("event", callback)
-        receiver.off("event", callback)
-        emitter.emit("event", "data")
-        expect(callback).to.not.have.been.called
-    })
-
-    it("should remove all listeners", () => {
-        const [emitter, receiver] = useEvents()
-        const callback1 = fake()
-        const callback2 = fake()
-
-        receiver
-            .on("event1", callback1)
-            .on("event2", callback2)
-            .clear()
-        emitter.emit("event", "data")
-
-        expect(callback1).to.not.have.been.called
-        expect(callback2).to.not.have.been.called
+    describe("#clear", () => {
+        it("should unsubscribe all listeners to all events", () => {
+            const [emitter, receiver] = useEvents()
+            const callback1 = fake()
+            const callback2 = fake()
+            receiver.on("test1", callback1)
+            receiver.on("test2", callback2)
+            receiver.clear()
+            emitter.emit("test1", "test")
+            emitter.emit("test2", "test")
+            expect(callback1).to.not.have.been.called
+            expect(callback2).to.not.have.been.called
+        })
     })
 })
