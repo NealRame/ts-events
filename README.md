@@ -37,7 +37,6 @@ emitter.emit("event2", "foo")
 An `EventMap` type is used to type subscriptions to events as well as their
 emissions.
 
-##### Example
 ```ts
 type MyEvents = {
     event1: string
@@ -64,7 +63,17 @@ emitter.emit(event2, {
 }) // Error: Argument of type '{ w: number; y: number; }' is not assignable to parameter of type '{ x: number; y: number; }'
 ```
 
-### IEmitter
+If no `EventMap` type is specified, there will be no type checking.
+```ts
+const [emitter, receiver] = useEvent()
 
+receiver.on("event1", data => { ... })   // data type is any
+receiver.once("event2", data => { ... }) // data type is any
+
+emitter.emit(event1, { r: 0xb4, g: 0xd4, b: 0x55 })
+emitter.emit(event2, 3.14)
+```
+
+### IEmitter
 
 ### IReceiver
