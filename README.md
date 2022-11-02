@@ -76,4 +76,20 @@ emitter.emit(event2, 3.14)
 
 ### IEmitter
 
+#### emit
+
+##### Synopsis
+```ts
+function emit(event, data)
+```
+
+##### Example
+```ts
+const [emitter, receiver] = useEvent<{
+    event1: number
+}>()
+
+emitter.emit("event1", 3.14)
+```
+
 ### IReceiver
