@@ -6,7 +6,7 @@ export type EventMap = Record<string, any>
 export type EventKey<T extends EventMap> = string & keyof T
 
 export interface IEmitter<T extends EventMap> {
-    emit<K extends EventKey<T>>(eventName: K, ...[params]: void extends T[K] ? [void] : [T[K]]): IEmitter<T>
+    emit<K extends EventKey<T>>(eventName: K, ...[eventData]: void extends T[K] ? [void] : [T[K]]): IEmitter<T>
     emit<K extends EventKey<T>>(eventName: K, eventData: T[K]): IEmitter<T>
 }
 

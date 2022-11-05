@@ -47,6 +47,7 @@ describe("IEmitter", () => {
             test: void
         }>()
         expect(emitter.emit("test")).to.equal(emitter)
+        expect(emitter.emit("test", undefined)).to.equal(emitter)
     })
 })
 
