@@ -41,6 +41,13 @@ describe("IEmitter", () => {
         const [emitter] = useEvents()
         expect(emitter.emit("test", "test")).to.equal(emitter)
     })
+
+    it("should accept void event type", () => {
+        const [emitter] = useEvents<{
+            test: void
+        }>()
+        expect(emitter.emit("test")).to.equal(emitter)
+    })
 })
 
 describe("IReceiver", () => {
