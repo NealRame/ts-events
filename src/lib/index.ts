@@ -3,20 +3,20 @@ export type TEventListenerUnsubscribeCallback = () => void
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TEventMap = Record<string, any>
-export type EventKey<T extends TEventMap> = string & keyof T
+export type TEventKey<T extends TEventMap> = string & keyof T
 
 export interface IEmitter<T extends TEventMap> {
-    emit<K extends EventKey<T>>(eventName: K, ...[eventData]: void extends T[K] ? [void] : [T[K]]): IEmitter<T>
-    emit<K extends EventKey<T>>(eventName: K, eventData: T[K]): IEmitter<T>
+    emit<K extends TEventKey<T>>(eventName: K, ...[eventData]: void extends T[K] ? [void] : [T[K]]): IEmitter<T>
+    emit<K extends TEventKey<T>>(eventName: K, eventData: T[K]): IEmitter<T>
 }
 
 export interface IReceiver<T extends TEventMap> {
-    on<K extends EventKey<T>>(eventName: K, callback: TEventListenerCallback<T[K]>): TEventListenerUnsubscribeCallback
-    once<K extends EventKey<T>>(eventName: K, callback: TEventListenerCallback<T[K]>): TEventListenerUnsubscribeCallback
+    on<K extends TEventKey<T>>(eventName: K, callback: TEventListenerCallback<T[K]>): TEventListenerUnsubscribeCallback
+    once<K extends TEventKey<T>>(eventName: K, callback: TEventListenerCallback<T[K]>): TEventListenerUnsubscribeCallback
 
     off(): void
-    off<K extends EventKey<T>>(eventName: K): void
-    off<K extends EventKey<T>>(eventName: K, callback: TEventListenerCallback<T[K]>): void
+    off<K extends TEventKey<T>>(eventName: K): void
+    off<K extends TEventKey<T>>(eventName: K, callback: TEventListenerCallback<T[K]>): void
 }
 
 export function useEvents<T extends TEventMap>()
@@ -25,7 +25,7 @@ export function useEvents<T extends TEventMap>()
     let handlersOnce: { [K in keyof T]?: Array<TEventListenerCallback<T[K]>> } = {}
 
     return [{
-        emit<K extends EventKey<T>>(
+        emit<K extends TEventKey<T>>(
             eventName: K,
             data: T[K]
         ): IEmitter<T> {
@@ -43,7 +43,7 @@ export function useEvents<T extends TEventMap>()
             return this
         }
     }, {
-        on<K extends EventKey<T>>(
+        on<K extends TEventKey<T>>(
             eventName: K,
             callback: TEventListenerCallback<T[K]>,
         ): TEventListenerUnsubscribeCallback {
@@ -56,7 +56,7 @@ export function useEvents<T extends TEventMap>()
 
             return () => this.off(eventName, callback)
         },
-        once<K extends EventKey<T>>(
+        once<K extends TEventKey<T>>(
             eventName: K,
             callback: TEventListenerCallback<T[K]>,
         ): TEventListenerUnsubscribeCallback {
@@ -69,7 +69,7 @@ export function useEvents<T extends TEventMap>()
 
             return () => this.off(eventName, callback)
         },
-        off<K extends EventKey<T>>(
+        off<K extends TEventKey<T>>(
             eventName?: K,
             callback?: TEventListenerCallback<T[K]>,
         ) {
