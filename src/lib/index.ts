@@ -5,10 +5,9 @@ export type TEventListenerUnsubscribeCallback = () => void
 export type TEventMap = Record<string, any>
 export type TEventKey<T extends TEventMap> = string & keyof T
 
-export interface IEmitter<T extends TEventMap> {
-    emit<K extends TEventKey<T>>(eventName: K, ...[eventData]: void extends T[K] ? [void] : [T[K]]): IEmitter<T>
-    emit<K extends TEventKey<T>>(eventName: K, eventData: T[K]): IEmitter<T>
-}
+export type TEmitter<T extends TEventMap> =
+    (<K extends TEventKey<T>>(eventName: K, ...[eventData]: void extends T[K] ? [void] : [T[K]]) => void) &
+    (<K extends TEventKey<T>>(eventName: K, eventData: T[K]) => void)
 
 export interface IReceiver<T extends TEventMap> {
     on<K extends TEventKey<T>>(eventName: K, callback: TEventListenerCallback<T[K]>): TEventListenerUnsubscribeCallback
@@ -20,81 +19,79 @@ export interface IReceiver<T extends TEventMap> {
 }
 
 export function useEvents<T extends TEventMap>()
-    : [IEmitter<T>, IReceiver<T>] {
+    : [TEmitter<T>, IReceiver<T>] {
     let handlers: { [K in keyof T]?: Array<TEventListenerCallback<T[K]>> } = {}
     let handlersOnce: { [K in keyof T]?: Array<TEventListenerCallback<T[K]>> } = {}
 
-    return [{
-        emit<K extends TEventKey<T>>(
-            eventName: K,
-            data: T[K]
-        ): IEmitter<T> {
+    const emit = <K extends TEventKey<T>>(eventName: K, eventData: T[K]) => {
+        const eventHandlers = handlers[eventName]
+        if (eventHandlers != null) {
+            eventHandlers.forEach(l => l(eventData))
+        }
+
+        const eventHandlersOnce = handlersOnce[eventName]
+        if (eventHandlersOnce != null) {
+            eventHandlersOnce.forEach(l => l(eventData))
+        }
+
+        delete handlersOnce[eventName]
+    }
+
+    const off = <K extends TEventKey<T>>(
+        eventName?: K,
+        callback?: TEventListenerCallback<T[K]>,
+    ) => {
+        if (eventName == null) {
+            handlers = {}
+            handlersOnce = {}
+        } else if (callback == null) {
+            delete handlers[eventName]
+            delete handlersOnce[eventName]
+        } else {
             const eventHandlers = handlers[eventName]
             if (eventHandlers != null) {
-                eventHandlers.forEach(l => l(data))
+                const index = eventHandlers.indexOf(callback)
+                if (index >= 0) {
+                    eventHandlers.splice(index, 1)
+                }
             }
-
             const eventHandlersOnce = handlersOnce[eventName]
             if (eventHandlersOnce != null) {
-                eventHandlersOnce.forEach(l => l(data))
-            }
-            delete handlersOnce[eventName]
-
-            return this
-        }
-    }, {
-        on<K extends TEventKey<T>>(
-            eventName: K,
-            callback: TEventListenerCallback<T[K]>,
-        ): TEventListenerUnsubscribeCallback {
-            type ListenerList = Array<TEventListenerCallback<T[K]>>
-
-            if (!(eventName in handlers)) {
-                handlers[eventName] = []
-            }
-            (handlers[eventName] as ListenerList).push(callback)
-
-            return () => this.off(eventName, callback)
-        },
-        once<K extends TEventKey<T>>(
-            eventName: K,
-            callback: TEventListenerCallback<T[K]>,
-        ): TEventListenerUnsubscribeCallback {
-            type ListenerList = Array<TEventListenerCallback<T[K]>>
-
-            if (!(eventName in handlersOnce)) {
-                handlersOnce[eventName] = []
-            }
-            (handlersOnce[eventName] as ListenerList).push(callback)
-
-            return () => this.off(eventName, callback)
-        },
-        off<K extends TEventKey<T>>(
-            eventName?: K,
-            callback?: TEventListenerCallback<T[K]>,
-        ) {
-            if (eventName == null) {
-                handlers = {}
-                handlersOnce = {}
-            } else if (callback == null) {
-                delete handlers[eventName]
-                delete handlersOnce[eventName]
-            } else {
-                const eventHandlers = handlers[eventName]
-                if (eventHandlers != null) {
-                    const index = eventHandlers.indexOf(callback)
-                    if (index >= 0) {
-                        eventHandlers.splice(index, 1)
-                    }
-                }
-                const eventHandlersOnce = handlersOnce[eventName]
-                if (eventHandlersOnce != null) {
-                    const index = eventHandlersOnce.indexOf(callback)
-                    if (index >= 0) {
-                        eventHandlersOnce.splice(index, 1)
-                    }
+                const index = eventHandlersOnce.indexOf(callback)
+                if (index >= 0) {
+                    eventHandlersOnce.splice(index, 1)
                 }
             }
         }
-    }]
+    }
+
+    const on = <K extends TEventKey<T>>(
+        eventName: K,
+        callback: TEventListenerCallback<T[K]>,
+    ): TEventListenerUnsubscribeCallback => {
+        type ListenerList = Array<TEventListenerCallback<T[K]>>
+
+        if (!(eventName in handlers)) {
+            handlers[eventName] = []
+        }
+        (handlers[eventName] as ListenerList).push(callback)
+
+        return () => off(eventName, callback)
+    }
+
+    const once = <K extends TEventKey<T>>(
+        eventName: K,
+        callback: TEventListenerCallback<T[K]>,
+    ): TEventListenerUnsubscribeCallback => {
+        type ListenerList = Array<TEventListenerCallback<T[K]>>
+
+        if (!(eventName in handlersOnce)) {
+            handlersOnce[eventName] = []
+        }
+        (handlersOnce[eventName] as ListenerList).push(callback)
+
+        return () => off(eventName, callback)
+    }
+
+    return [emit, { off, on, once }]
 }
