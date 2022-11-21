@@ -2,15 +2,15 @@ export type TEventListenerCallback<EventType> = (event: EventType) => void
 export type TEventListenerUnsubscribeCallback = () => void
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type EventMap = Record<string, any>
-export type EventKey<T extends EventMap> = string & keyof T
+export type TEventMap = Record<string, any>
+export type EventKey<T extends TEventMap> = string & keyof T
 
-export interface IEmitter<T extends EventMap> {
+export interface IEmitter<T extends TEventMap> {
     emit<K extends EventKey<T>>(eventName: K, ...[eventData]: void extends T[K] ? [void] : [T[K]]): IEmitter<T>
     emit<K extends EventKey<T>>(eventName: K, eventData: T[K]): IEmitter<T>
 }
 
-export interface IReceiver<T extends EventMap> {
+export interface IReceiver<T extends TEventMap> {
     on<K extends EventKey<T>>(eventName: K, callback: TEventListenerCallback<T[K]>): TEventListenerUnsubscribeCallback
     once<K extends EventKey<T>>(eventName: K, callback: TEventListenerCallback<T[K]>): TEventListenerUnsubscribeCallback
 
@@ -19,7 +19,7 @@ export interface IReceiver<T extends EventMap> {
     off<K extends EventKey<T>>(eventName: K, callback: TEventListenerCallback<T[K]>): void
 }
 
-export function useEvents<T extends EventMap>()
+export function useEvents<T extends TEventMap>()
     : [IEmitter<T>, IReceiver<T>] {
     let handlers: { [K in keyof T]?: Array<TEventListenerCallback<T[K]>> } = {}
     let handlersOnce: { [K in keyof T]?: Array<TEventListenerCallback<T[K]>> } = {}
