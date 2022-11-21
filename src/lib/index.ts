@@ -1,5 +1,5 @@
 export type TEventListenerCallback<EventType> = (event: EventType) => void
-export type EventListenerUnsubscribeCallback = () => void
+export type TEventListenerUnsubscribeCallback = () => void
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type EventMap = Record<string, any>
@@ -11,8 +11,8 @@ export interface IEmitter<T extends EventMap> {
 }
 
 export interface IReceiver<T extends EventMap> {
-    on<K extends EventKey<T>>(eventName: K, callback: TEventListenerCallback<T[K]>): EventListenerUnsubscribeCallback
-    once<K extends EventKey<T>>(eventName: K, callback: TEventListenerCallback<T[K]>): EventListenerUnsubscribeCallback
+    on<K extends EventKey<T>>(eventName: K, callback: TEventListenerCallback<T[K]>): TEventListenerUnsubscribeCallback
+    once<K extends EventKey<T>>(eventName: K, callback: TEventListenerCallback<T[K]>): TEventListenerUnsubscribeCallback
 
     off(): void
     off<K extends EventKey<T>>(eventName: K): void
@@ -46,7 +46,7 @@ export function useEvents<T extends EventMap>()
         on<K extends EventKey<T>>(
             eventName: K,
             callback: TEventListenerCallback<T[K]>,
-        ): EventListenerUnsubscribeCallback {
+        ): TEventListenerUnsubscribeCallback {
             type ListenerList = Array<TEventListenerCallback<T[K]>>
 
             if (!(eventName in handlers)) {
@@ -59,7 +59,7 @@ export function useEvents<T extends EventMap>()
         once<K extends EventKey<T>>(
             eventName: K,
             callback: TEventListenerCallback<T[K]>,
-        ): EventListenerUnsubscribeCallback {
+        ): TEventListenerUnsubscribeCallback {
             type ListenerList = Array<TEventListenerCallback<T[K]>>
 
             if (!(eventName in handlersOnce)) {
