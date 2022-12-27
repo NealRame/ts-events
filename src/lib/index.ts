@@ -38,7 +38,7 @@ export interface IReceiver<T extends TEventMap = TDefaultEventMap> {
     disconnect(eventHandlers: TEventHandlers<T>): void
 }
 
-export function useEvents<T extends TEventMap = TDefaultEventMap>()
+export function createEmitterReceiver<T extends TEventMap = TDefaultEventMap>()
     : [TEmitter<T>, IReceiver<T>] {
     let handlers: { [K in keyof T]?: Array<TEventListenerCallback<T[K]>> } = {}
     let handlersOnce: { [K in keyof T]?: Array<TEventListenerCallback<T[K]>> } = {}

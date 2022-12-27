@@ -10,7 +10,7 @@ import {
 } from "sinon"
 
 import {
-    useEvents,
+    createEmitterReceiver,
 } from "../lib"
 
 chai.use(simonChai)
@@ -19,13 +19,13 @@ function noop() {
     // noop
 }
 
-describe("useEvents", () => {
+describe("createEmitterReceiver", () => {
     it("should be a function", () => {
-        expect(useEvents).to.be.a("function")
+        expect(createEmitterReceiver).to.be.a("function")
     })
 
     it("should return a pair of emitter and receiver", () => {
-        const [emit, receiver] = useEvents()
+        const [emit, receiver] = createEmitterReceiver()
         expect(emit).to.be.a("function")
         expect(receiver).to.be.an("object")
     })
@@ -33,12 +33,12 @@ describe("useEvents", () => {
 
 describe("IEmitter", () => {
     it("should have a method emit", () => {
-        const [emit] = useEvents()
+        const [emit] = createEmitterReceiver()
         expect(emit).to.be.a("function")
     })
 
     it("should accept void event type", () => {
-        const [emit] = useEvents<{
+        const [emit] = createEmitterReceiver<{
             test: void
         }>()
         expect(emit("test")).to.be.undefined
@@ -49,12 +49,12 @@ describe("IEmitter", () => {
 describe("IReceiver", () => {
     describe("#on", () => {
         it("should return a function", () => {
-            const [, receiver] = useEvents()
+            const [, receiver] = createEmitterReceiver()
             expect(receiver.on("test", noop)).to.be.a("function")
         })
 
         it("should call the event callback with the event data", () => {
-            const [emit, receiver] = useEvents()
+            const [emit, receiver] = createEmitterReceiver()
             const callback = fake()
             receiver.on("test", callback)
             emit("test", "test")
@@ -62,7 +62,7 @@ describe("IReceiver", () => {
         })
 
         it("should call the event callback each time the event is emitted", () => {
-            const [emit, receiver] = useEvents()
+            const [emit, receiver] = createEmitterReceiver()
             const callback = fake()
             receiver.on("test", callback)
             emit("test", "test")
@@ -71,7 +71,7 @@ describe("IReceiver", () => {
         })
 
         it("shoud unsubscribe the event when the returned function is called", () => {
-            const [emit, receiver] = useEvents()
+            const [emit, receiver] = createEmitterReceiver()
             const callback = fake()
             const unsubscribe = receiver.on("test", callback)
             unsubscribe()
@@ -82,12 +82,12 @@ describe("IReceiver", () => {
 
     describe("#once", () => {
         it("should return a function", () => {
-            const [, receiver] = useEvents()
+            const [, receiver] = createEmitterReceiver()
             expect(receiver.once("test", noop)).to.be.a("function")
         })
 
         it("should call the event callback with the event data", () => {
-            const [emit, receiver] = useEvents()
+            const [emit, receiver] = createEmitterReceiver()
             const callback = fake()
             receiver.once("test", callback)
             emit("test", "test")
@@ -95,7 +95,7 @@ describe("IReceiver", () => {
         })
 
         it("should call the event callback only once", () => {
-            const [emit, receiver] = useEvents()
+            const [emit, receiver] = createEmitterReceiver()
             const callback = fake()
             receiver.once("test", callback)
             emit("test", "test")
@@ -104,7 +104,7 @@ describe("IReceiver", () => {
         })
 
         it("shoud unsubscribe the event when the returned function is called", () => {
-            const [emit, receiver] = useEvents()
+            const [emit, receiver] = createEmitterReceiver()
             const callback = fake()
             const unsubscribe = receiver.once("test", callback)
             unsubscribe()
@@ -115,7 +115,7 @@ describe("IReceiver", () => {
 
     describe("#off", () => {
         it("should unsubscribe a given listener to the event", () => {
-            const [emit, receiver] = useEvents()
+            const [emit, receiver] = createEmitterReceiver()
             const callback1 = fake()
             const callback2 = fake()
             receiver.on("test", callback1)
@@ -127,7 +127,7 @@ describe("IReceiver", () => {
         })
 
         it("should unsubscribe all listeners to the event if no listener is given", () => {
-            const [emit, receiver] = useEvents()
+            const [emit, receiver] = createEmitterReceiver()
             const callback1 = fake()
             const callback2 = fake()
             receiver.on("test", callback1)
@@ -139,7 +139,7 @@ describe("IReceiver", () => {
         })
 
         it("should unsubscribe all listeners to all events if no event is given", () => {
-            const [emit, receiver] = useEvents()
+            const [emit, receiver] = createEmitterReceiver()
             const callback1 = fake()
             const callback2 = fake()
             receiver.on("test1", callback1)
@@ -154,7 +154,7 @@ describe("IReceiver", () => {
 
     describe("#connect", () => {
         it("should connect a mapping of events to handlers", () => {
-            const [emit, receiver] = useEvents()
+            const [emit, receiver] = createEmitterReceiver()
             const callback1 = fake()
             const callback2 = fake()
             receiver.connect({
@@ -170,7 +170,7 @@ describe("IReceiver", () => {
 
     describe("#disconnect", () => {
         it("should disconnect a mapping of events to handlers", () => {
-            const [emit, receiver] = useEvents()
+            const [emit, receiver] = createEmitterReceiver()
             const callback1 = fake()
             const callback2 = fake()
             receiver.connect({
