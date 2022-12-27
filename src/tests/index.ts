@@ -151,4 +151,40 @@ describe("IReceiver", () => {
             expect(callback2).to.not.have.been.called
         })
     })
+
+    describe("#connect", () => {
+        it("should connect a mapping of events to handlers", () => {
+            const [emit, receiver] = useEvents()
+            const callback1 = fake()
+            const callback2 = fake()
+            receiver.connect({
+                test1: callback1,
+                test2: callback2,
+            })
+            emit("test1", "test1")
+            emit("test2", "test2")
+            expect(callback1).to.have.been.calledWith("test1")
+            expect(callback2).to.have.been.calledWith("test2")
+        })
+    })
+
+    describe("#disconnect", () => {
+        it("should disconnect a mapping of events to handlers", () => {
+            const [emit, receiver] = useEvents()
+            const callback1 = fake()
+            const callback2 = fake()
+            receiver.connect({
+                test1: callback1,
+                test2: callback2,
+            })
+            receiver.disconnect({
+                test1: callback1,
+                test2: callback2,
+            })
+            emit("test1", "test1")
+            emit("test2", "test2")
+            expect(callback1).to.not.have.been.called
+            expect(callback2).to.not.have.been.called
+        })
+    })
 })
