@@ -10,12 +10,12 @@ A simple Emitter/Receiver library for Typescript.
 
 ## API
 
-#### useEvents
+#### createEmitterReceiver
 Get a pair of emitter and receiver.
 
 ##### Synopsys
 ```ts
-function useEvents<T extends TEventMap>(): [TEmitter<T>, IReceiver<T>]
+function createEmitterReceiver<T extends TEventMap>(): [TEmitter<T>, IReceiver<T>]
 ```
 
 ##### Example
@@ -24,7 +24,7 @@ interface MyEvents {
     "event1": number
     "event2": string
 }
-const [emit, receiver] = useEvent<MyEvents>()
+const [emit, receiver] = createEmitterReceiver<MyEvents>()
 
 receiver.on("event1", data => { /* ... */ })   // called every time event1 is emitted
 receiver.once("event2", data => { /* ... */ }) // called once
@@ -45,7 +45,7 @@ type MyEvents = {
         y: number
     }
 }
-const [emit, receiver] = useEvent<MyEvents>()
+const [emit, receiver] = createEmitterReceiver<MyEvents>()
 
 receiver.on("event1", data => {
     console.log(data.toUpperCase())
@@ -65,7 +65,7 @@ emit(event2, {
 
 If no `EventMap` type is specified, there will be no type checking.
 ```ts
-const [emit, receiver] = useEvent()
+const [emit, receiver] = createEmitterReceiver()
 
 receiver.on("event1", data => { ... })   // data type is any
 receiver.once("event2", data => { ... }) // data type is any
@@ -83,7 +83,7 @@ function emit(event, data)
 
 ##### Example
 ```ts
-const [emit, receiver] = useEvent<{
+const [emit, receiver] = createEmitterReceiver<{
     event1: number
 }>()
 
@@ -108,7 +108,7 @@ A function to end subscription to the event.
 
 ##### Example
 ```ts
-const [emitter, receiver] = useEvent<{
+const [emitter, receiver] = createEmitterReceiver<{
     event1: number
 }>()
 
@@ -135,7 +135,7 @@ A function to end subscription to the event.
 
 ##### Example
 ```ts
-const [emitter, receiver] = useEvent<{
+const [emitter, receiver] = createEmitterReceiver<{
     event1: number
 }>()
 
@@ -161,7 +161,7 @@ function off(event, callback): void
 
 ##### Example
 ```ts
-const [emitter, receiver] = useEvent<{
+const [emitter, receiver] = createEmitterReceiver<{
     event1: number
     event2: number
 }>()
@@ -182,3 +182,70 @@ receiver.off("event1") // after this no more callbacks will be called for event1
 receiver.off() //after this no more callbacks will be called for any events
 ```
 
+#### connect
+Connect a set of events of a receiver to handlers using a mapping.
+
+##### Synopsis
+```ts
+function connect(eventHandlers): void
+```
+
+##### Parameters
+* `eventHandlers`: map events to handlers
+
+##### Example
+```ts
+type MyEvents = {
+    event1: string
+    event2: {
+        x: number
+        y: number
+    }
+    event3: number
+}
+const [emit, receiver] = createEmitterReceiver<MyEvents>()
+
+receiver.connect({
+    event1(value: string) {
+        console.log("event1", value)
+    },
+    event2({ x, y }) {
+        console.log("event2", x, y)
+    }
+})
+```
+
+#### disconnect
+Disconnect a set of events of a receiver from handlers using a mapping.
+
+##### Synopsis
+```ts
+function disconnect(eventHandlers): void
+```
+
+##### Parameters
+* `eventHandlers`: map events to handlers
+
+##### Example
+```ts
+type MyEvents = {
+    event1: string
+    event2: {
+        x: number
+        y: number
+    }
+    event3: number
+}
+const [emit, receiver] = createEmitterReceiver<MyEvents>()
+const eventHandlers = {
+    event1(value: string) {
+        console.log("event1", value)
+    },
+    event2({ x, y }) {
+        console.log("event2", x, y)
+    }
+}
+
+receiver.connect(eventHandlers)
+receiver.disconnect(eventHandlers)
+```
