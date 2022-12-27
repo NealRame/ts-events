@@ -8,6 +8,10 @@ export type TEventKey<T extends TEventMap> = string & keyof T
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TDefaultEventMap = Record<string, any>
 
+export type TEventHandlers<T extends TEventMap = TDefaultEventMap> = {
+    [K in TEventKey<T>]?: TEventListenerCallback<T[K]>
+}
+
 export type TEmitter<T extends TEventMap = TDefaultEventMap> =
     (<K extends TEventKey<T>>(eventName: K, ...[eventData]: void extends T[K] ? [void] : [T[K]]) => void) &
     (<K extends TEventKey<T>>(eventName: K, eventData: T[K]) => void)
@@ -29,6 +33,9 @@ export interface IReceiver<T extends TEventMap = TDefaultEventMap> {
         eventName: K,
         callback: TEventListenerCallback<T[K]>,
     ): void
+
+    connect(eventHandlers: TEventHandlers<T>): void
+    disconnect(eventHandlers: TEventHandlers<T>): void
 }
 
 export function useEvents<T extends TEventMap = TDefaultEventMap>()
@@ -106,5 +113,17 @@ export function useEvents<T extends TEventMap = TDefaultEventMap>()
         return () => off(eventName, callback)
     }
 
-    return [emit, { off, on, once }]
+    const connect = (eventHandlers: TEventHandlers<T>) => {
+        for (const [eventName, eventHandler] of Object.entries(eventHandlers)) {
+            on(eventName, eventHandler)
+        }
+    }
+
+    const disconnect = (eventHandlers: TEventHandlers<T>) => {
+        for (const [eventName, eventHandler] of Object.entries(eventHandlers)) {
+            off(eventName, eventHandler)
+        }
+    }
+
+    return [emit, { off, on, once, connect, disconnect }]
 }
