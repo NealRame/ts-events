@@ -1,6 +1,6 @@
 {
   "name": "@nealrame/ts-events",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "A simple Emitter/Receiver library for Typescript",
   "main": "./dist/index.js",
   "files": [
